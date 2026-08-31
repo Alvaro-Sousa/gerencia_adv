@@ -1,0 +1,617 @@
+# Setup MVP Django — Gerencia Adv
+
+Este guia reúne uma base funcional do MVP em Django para o projeto **Gerencia Adv**, com:
+
+- autenticação com JWT;
+- cadastro de usuários com perfis (`client` e `lawyer`);
+- fluxo mínimo de solicitações de processo;
+- upload de documentos;
+- atualização de status por advogado;
+- rotas prontas para integração com frontend.
+
+---
+
+## 1) Requisitos
+
+- Python 3.11+ (ou 3.10+)
+- pip
+- (Opcional) virtualenv
+
+---
+
+## 2) Estrutura sugerida
+
+```txt
+gerencia_adv/
+├─ manage.py
+├─ requirements.txt
+├─ config/
+│  ├─ __init__.py
+│  ├─ settings.py
+│  ├─ urls.py
+│  ├─ asgi.py
+│  └─ wsgi.py
+├─ apps/
+│  ├─ users/
+│  │  ├─ __init__.py
+│  │  ├─ admin.py
+│  │  ├─ apps.py
+│  │  ├─ models.py
+│  │  ├─ serializers.py
+│  │  ├─ urls.py
+│  │  └─ views.py
+│  └─ processes/
+│     ├─ __init__.py
+│     ├─ admin.py
+│     ├─ apps.py
+│     ├─ models.py
+│     ├─ serializers.py
+│     ├─ permissions.py
+│     ├─ urls.py
+│     └─ views.py
+└─ media/
+```
+
+---
+
+## 3) requirements.txt
+
+```txt
+Django>=5.0,<6.0
+djangorestframework>=3.15.0
+djangorestframework-simplejwt>=5.3.1
+```
+
+---
+
+## 4) Configuração principal (`config/settings.py`)
+
+```python
+from pathlib import Path
+from datetime import timedelta
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = "troque-essa-chave-em-producao"
+DEBUG = True
+ALLOWED_HOSTS = []
+
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+
+    "rest_framework",
+
+    "apps.users",
+    "apps.processes",
+]
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+ROOT_URLCONF = "config.urls"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ]
+        },
+    }
+]
+
+WSGI_APPLICATION = "config.wsgi.application"
+
+# MVP rápido com SQLite (pode trocar para PostgreSQL depois)
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
+
+AUTH_PASSWORD_VALIDATORS = []
+
+LANGUAGE_CODE = "pt-br"
+TIME_ZONE = "America/Sao_Paulo"
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = "static/"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "users.User"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+}
+```
+
+---
+
+## 5) App de usuários
+
+### `apps/users/models.py`
+
+```python
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class User(AbstractUser):
+    ROLE_CHOICES = (
+        ("client", "Cliente"),
+        ("lawyer", "Advogado"),
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="client")
+
+    def __str__(self):
+        return f"{self.username} ({self.role})"
+```
+
+### `apps/users/serializers.py`
+
+```python
+from rest_framework import serializers
+from .models import User
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=6)
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "password", "role"]
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+
+class UserMeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "role"]
+```
+
+### `apps/users/views.py`
+
+```python
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from .serializers import RegisterSerializer, UserMeSerializer
+
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
+class MeView(generics.GenericAPIView):
+    serializer_class = UserMeSerializer
+
+    def get(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+```
+
+### `apps/users/urls.py`
+
+```python
+from django.urls import path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .views import RegisterView, MeView
+
+urlpatterns = [
+    path("register/", RegisterView.as_view(), name="auth-register"),
+    path("login/", TokenObtainPairView.as_view(), name="auth-login"),
+    path("refresh/", TokenRefreshView.as_view(), name="auth-refresh"),
+    path("me/", MeView.as_view(), name="auth-me"),
+]
+```
+
+### `apps/users/admin.py`
+
+```python
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models import User
+
+admin.site.register(User, UserAdmin)
+```
+
+---
+
+## 6) App de processos (MVP jurídico)
+
+### `apps/processes/models.py`
+
+```python
+from django.conf import settings
+from django.db import models
+
+class ProcessType(models.Model):
+    title = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+class RequiredDocument(models.Model):
+    process_type = models.ForeignKey(ProcessType, on_delete=models.CASCADE, related_name="required_documents")
+    document_name = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+    required = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.process_type.title} - {self.document_name}"
+
+class ProcessRequest(models.Model):
+    STATUS_CHOICES = (
+        ("pending_docs", "Aguardando documentos"),
+        ("under_review", "Em análise"),
+        ("in_progress", "Em andamento"),
+        ("approved", "Concluído"),
+        ("rejected", "Recusado"),
+    )
+
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="process_requests")
+    process_type = models.ForeignKey(ProcessType, on_delete=models.PROTECT, related_name="requests")
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="pending_docs")
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class ProcessDocument(models.Model):
+    process_request = models.ForeignKey(ProcessRequest, on_delete=models.CASCADE, related_name="documents")
+    document_name = models.CharField(max_length=150)
+    file = models.FileField(upload_to="process_documents/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+class ProcessStatusHistory(models.Model):
+    process_request = models.ForeignKey(ProcessRequest, on_delete=models.CASCADE, related_name="status_history")
+    old_status = models.CharField(max_length=30, blank=True, null=True)
+    new_status = models.CharField(max_length=30)
+    changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+```
+
+### `apps/processes/serializers.py`
+
+```python
+from rest_framework import serializers
+from .models import ProcessType, RequiredDocument, ProcessRequest, ProcessDocument, ProcessStatusHistory
+
+class ProcessTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProcessType
+        fields = ["id", "title", "description", "active", "created_at"]
+
+class RequiredDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequiredDocument
+        fields = ["id", "process_type", "document_name", "description", "required"]
+
+class ProcessDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProcessDocument
+        fields = ["id", "process_request", "document_name", "file", "uploaded_at"]
+        read_only_fields = ["uploaded_at"]
+
+class ProcessStatusHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProcessStatusHistory
+        fields = ["id", "process_request", "old_status", "new_status", "changed_by", "created_at"]
+        read_only_fields = ["changed_by", "created_at"]
+
+class ProcessRequestSerializer(serializers.ModelSerializer):
+    documents = ProcessDocumentSerializer(many=True, read_only=True)
+    status_history = ProcessStatusHistorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProcessRequest
+        fields = ["id", "client", "process_type", "status", "notes", "created_at", "documents", "status_history"]
+        read_only_fields = ["client", "created_at"]
+```
+
+### `apps/processes/permissions.py`
+
+```python
+from rest_framework.permissions import BasePermission
+
+class IsLawyer(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == "lawyer"
+
+class IsClient(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == "client"
+```
+
+### `apps/processes/views.py`
+
+```python
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from .models import ProcessType, RequiredDocument, ProcessRequest, ProcessDocument, ProcessStatusHistory
+from .serializers import (
+    ProcessTypeSerializer,
+    RequiredDocumentSerializer,
+    ProcessRequestSerializer,
+    ProcessDocumentSerializer,
+)
+
+class ProcessTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProcessType.objects.filter(active=True).order_by("title")
+    serializer_class = ProcessTypeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class RequiredDocumentViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = RequiredDocument.objects.all().order_by("document_name")
+    serializer_class = RequiredDocumentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class ProcessRequestViewSet(viewsets.ModelViewSet):
+    serializer_class = ProcessRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = ProcessRequest.objects.select_related("client", "process_type").prefetch_related("documents", "status_history")
+        if user.role == "lawyer":
+            return qs.order_by("-created_at")
+        return qs.filter(client=user).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(client=self.request.user)
+
+    @action(detail=True, methods=["patch"], url_path="update-status")
+    def update_status(self, request, pk=None):
+        process_request = self.get_object()
+
+        if request.user.role != "lawyer":
+            return Response({"detail": "Apenas advogado pode atualizar status."}, status=status.HTTP_403_FORBIDDEN)
+
+        new_status = request.data.get("status")
+        valid_status = dict(ProcessRequest.STATUS_CHOICES).keys()
+        if new_status not in valid_status:
+            return Response({"detail": "Status inválido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        old_status = process_request.status
+        process_request.status = new_status
+        process_request.save()
+
+        ProcessStatusHistory.objects.create(
+            process_request=process_request,
+            old_status=old_status,
+            new_status=new_status,
+            changed_by=request.user
+        )
+
+        return Response({"detail": "Status atualizado com sucesso."})
+
+class ProcessDocumentViewSet(viewsets.ModelViewSet):
+    serializer_class = ProcessDocumentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = ProcessDocument.objects.select_related("process_request")
+        if user.role == "lawyer":
+            return qs.order_by("-uploaded_at")
+        return qs.filter(process_request__client=user).order_by("-uploaded_at")
+
+    def create(self, request, *args, **kwargs):
+        process_request_id = request.data.get("process_request")
+        try:
+            pr = ProcessRequest.objects.get(id=process_request_id)
+        except ProcessRequest.DoesNotExist:
+            return Response({"detail": "Solicitação não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.role == "client" and pr.client_id != request.user.id:
+            return Response({"detail": "Você só pode enviar docs da sua solicitação."}, status=status.HTTP_403_FORBIDDEN)
+
+        return super().create(request, *args, **kwargs)
+```
+
+### `apps/processes/urls.py`
+
+```python
+from rest_framework.routers import DefaultRouter
+from .views import ProcessTypeViewSet, RequiredDocumentViewSet, ProcessRequestViewSet, ProcessDocumentViewSet
+
+router = DefaultRouter()
+router.register(r"process-types", ProcessTypeViewSet, basename="process-types")
+router.register(r"required-documents", RequiredDocumentViewSet, basename="required-documents")
+router.register(r"requests", ProcessRequestViewSet, basename="requests")
+router.register(r"documents", ProcessDocumentViewSet, basename="documents")
+
+urlpatterns = router.urls
+```
+
+### `apps/processes/admin.py`
+
+```python
+from django.contrib import admin
+from .models import ProcessType, RequiredDocument, ProcessRequest, ProcessDocument, ProcessStatusHistory
+
+admin.site.register(ProcessType)
+admin.site.register(RequiredDocument)
+admin.site.register(ProcessRequest)
+admin.site.register(ProcessDocument)
+admin.site.register(ProcessStatusHistory)
+```
+
+---
+
+## 7) URLs globais (`config/urls.py`)
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/auth/", include("apps.users.urls")),
+    path("api/", include("apps.processes.urls")),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+```
+
+---
+
+## 8) Migração e execução
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# .venv\Scripts\activate   # Windows
+
+pip install -r requirements.txt
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+---
+
+## 9) Endpoints principais (MVP)
+
+### Auth (JWT)
+
+- `POST /api/auth/register/`
+- `POST /api/auth/login/`
+- `POST /api/auth/refresh/`
+- `GET /api/auth/me/`
+
+### Processos
+
+- `GET /api/process-types/`
+- `GET /api/required-documents/`
+- `GET|POST /api/requests/`
+- `GET|PATCH|DELETE /api/requests/{id}/`
+- `PATCH /api/requests/{id}/update-status/` (somente advogado)
+- `GET|POST /api/documents/`
+- `GET|PATCH|DELETE /api/documents/{id}/`
+
+---
+
+## 10) Exemplos rápidos de payload
+
+### Cadastro de cliente
+
+`POST /api/auth/register/`
+
+```json
+{
+  "username": "cliente1",
+  "email": "cliente1@email.com",
+  "password": "12345678",
+  "role": "client"
+}
+```
+
+### Login JWT
+
+`POST /api/auth/login/`
+
+```json
+{
+  "username": "cliente1",
+  "password": "12345678"
+}
+```
+
+Resposta esperada:
+
+```json
+{
+  "refresh": "TOKEN_REFRESH",
+  "access": "TOKEN_ACCESS"
+}
+```
+
+Use nos requests autenticados:
+
+```txt
+Authorization: Bearer TOKEN_ACCESS
+```
+
+### Criar solicitação de processo (cliente)
+
+`POST /api/requests/`
+
+```json
+{
+  "process_type": 1,
+  "notes": "Preciso iniciar processo trabalhista."
+}
+```
+
+### Atualizar status (advogado)
+
+`PATCH /api/requests/1/update-status/`
+
+```json
+{
+  "status": "under_review"
+}
+```
+
+---
+
+## 11) Próximas melhorias (pós-MVP)
+
+- paginação e filtros por status;
+- validação para impedir cliente de alterar request de outro cliente em update/delete;
+- storage externo (S3/Cloudinary) para documentos;
+- trilha de auditoria mais completa;
+- testes automatizados com pytest/django test;
+- documentação OpenAPI/Swagger.
+
+---
+
+## 12) Observação importante
+
+Este guia entrega um **MVP funcional** para começar rápido.  
+Para produção, ajustar pelo menos:
+
+- `SECRET_KEY` em variável de ambiente;
+- `DEBUG=False`;
+- `ALLOWED_HOSTS`;
+- banco PostgreSQL;
+- CORS/CSRF conforme frontend.
