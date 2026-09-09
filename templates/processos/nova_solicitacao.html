@@ -1,0 +1,61 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Nova Solicitação | Gerencia Adv{% endblock %}
+{% block page_title %}Nova Solicitação{% endblock %}
+{% block page_subtitle %}Cadastre um novo pedido do cliente no sistema{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+	<div class="col-12 col-xl-10">
+		<div class="card section-card">
+			<div class="card-body p-4 p-lg-5">
+				<div class="mb-4">
+					<h2 class="h4 fw-bold mb-2">Cadastro manual da solicitação</h2>
+					<p class="muted-text mb-0">
+						Use este formulário para simular a entrada de um novo processo no fluxo do escritório.
+					</p>
+				</div>
+
+				<form>
+					<div class="row g-3">
+						<div class="col-md-6">
+							<label class="form-label">Nome do cliente</label>
+							<input type="text" class="form-control" placeholder="Maria Silva">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Tipo de processo</label>
+							<select class="form-select">
+								<option>Inventário</option>
+								<option>Divórcio</option>
+								<option>Trabalhista</option>
+								<option>Previdenciário</option>
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Contato</label>
+							<input type="text" class="form-control" placeholder="(00) 00000-0000">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Status inicial</label>
+							<select class="form-select">
+								<option>Em análise</option>
+								<option>Em andamento</option>
+								<option>Aguardando documentos</option>
+								<option>Concluído</option>
+							</select>
+						</div>
+						<div class="col-12">
+							<label class="form-label">Descrição</label>
+							<textarea class="form-control" rows="5" placeholder="Descreva o caso, observações iniciais e próximos passos"></textarea>
+						</div>
+						<div class="col-12 d-flex gap-2 justify-content-end mt-2">
+							<a href="{% url 'processos:web_lista_solicitacoes' %}" class="btn btn-outline-secondary">Cancelar</a>
+							<button type="submit" class="btn btn-primary">Salvar solicitação</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

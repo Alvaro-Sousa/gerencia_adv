@@ -1,0 +1,107 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Detalhes da Solicitação | Gerencia Adv{% endblock %}
+{% block page_title %}Detalhes da Solicitação{% endblock %}
+{% block page_subtitle %}Visualização completa do andamento do caso{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+	<div class="col-12 col-lg-8">
+		<div class="card section-card mb-4">
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+					<div>
+						<h2 class="h4 fw-bold mb-1">Maria Silva</h2>
+						<p class="muted-text mb-0">Processo de inventário em acompanhamento</p>
+					</div>
+					<span class="badge text-bg-warning align-self-start">Em análise</span>
+				</div>
+
+				<div class="row g-3">
+					<div class="col-md-4">
+						<div class="p-3 rounded-3 bg-light border">
+							<div class="muted-text small">Tipo</div>
+							<div class="fw-semibold">Inventário</div>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="p-3 rounded-3 bg-light border">
+							<div class="muted-text small">Protocolo</div>
+							<div class="fw-semibold">#2026-001</div>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="p-3 rounded-3 bg-light border">
+							<div class="muted-text small">Responsável</div>
+							<div class="fw-semibold">Advogado titular</div>
+						</div>
+					</div>
+					<div class="col-12">
+						<div class="p-3 rounded-3 bg-light border">
+							<div class="muted-text small mb-1">Descrição</div>
+							<div>
+								Processo recebido com documentação inicial para análise e organização das próximas etapas.
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="card section-card">
+			<div class="card-body">
+				<h3 class="h5 fw-bold mb-3">Histórico de movimentações</h3>
+				<div class="d-flex flex-column gap-3">
+					<div class="p-3 rounded-3 bg-light border">
+						<div class="d-flex justify-content-between gap-3">
+							<div class="fw-semibold">Documentação recebida</div>
+							<small class="muted-text">03/09/2026</small>
+						</div>
+						<div class="muted-text small">Cliente enviou arquivos pendentes para continuidade do processo.</div>
+					</div>
+					<div class="p-3 rounded-3 bg-light border">
+						<div class="d-flex justify-content-between gap-3">
+							<div class="fw-semibold">Análise inicial concluída</div>
+							<small class="muted-text">02/09/2026</small>
+						</div>
+						<div class="muted-text small">Caso foi conferido e encaminhado para a próxima etapa.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-12 col-lg-4">
+		<div class="card section-card mb-4">
+			<div class="card-body">
+				<h3 class="h5 fw-bold mb-3">Ações rápidas</h3>
+				<div class="d-grid gap-2">
+					<button class="btn btn-primary">Atualizar status</button>
+					<button class="btn btn-outline-primary">Enviar documento</button>
+					<button class="btn btn-outline-secondary">Adicionar observação</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="card section-card">
+			<div class="card-body">
+				<h3 class="h5 fw-bold mb-3">Documentos</h3>
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item d-flex justify-content-between align-items-center px-0">
+						Procuração
+						<span class="badge text-bg-success">Enviado</span>
+					</li>
+					<li class="list-group-item d-flex justify-content-between align-items-center px-0">
+						RG/CPF
+						<span class="badge text-bg-success">Enviado</span>
+					</li>
+					<li class="list-group-item d-flex justify-content-between align-items-center px-0">
+						Certidão
+						<span class="badge text-bg-warning">Pendente</span>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

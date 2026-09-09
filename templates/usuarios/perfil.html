@@ -1,0 +1,68 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Perfil | Gerencia Adv{% endblock %}
+{% block page_title %}Perfil{% endblock %}
+{% block page_subtitle %}Dados do usuário autenticado e preferências básicas{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+	<div class="col-12 col-lg-4">
+		<div class="card section-card h-100">
+			<div class="card-body text-center">
+				<div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+					 style="width: 90px; height: 90px; font-size: 2rem;">
+					A
+				</div>
+				<h2 class="h4 fw-bold mb-1">Alvaro Sousa</h2>
+				<p class="muted-text mb-3">Advogado</p>
+				<span class="badge text-bg-primary px-3 py-2">Conta ativa</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-12 col-lg-8">
+		<div class="card section-card mb-4">
+			<div class="card-body">
+				<h3 class="h5 fw-bold mb-3">Informações do perfil</h3>
+				<div class="row g-3">
+					<div class="col-md-6">
+						<div class="p-3 rounded-3 bg-light border">
+							<div class="muted-text small">Nome completo</div>
+							<div class="fw-semibold">Alvaro Sousa</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="p-3 rounded-3 bg-light border">
+							<div class="muted-text small">Email</div>
+							<div class="fw-semibold">alvaro@gmail.com</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="p-3 rounded-3 bg-light border">
+							<div class="muted-text small">Tipo de usuário</div>
+							<div class="fw-semibold">Advogado</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="p-3 rounded-3 bg-light border">
+							<div class="muted-text small">Último acesso</div>
+							<div class="fw-semibold">Hoje, 09:15</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="card section-card">
+			<div class="card-body">
+				<h3 class="h5 fw-bold mb-3">Configurações rápidas</h3>
+				<div class="d-grid gap-2 d-md-flex">
+					<button class="btn btn-outline-primary">Editar dados</button>
+					<button class="btn btn-outline-secondary">Trocar senha</button>
+					<button class="btn btn-outline-danger">Sair da conta</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

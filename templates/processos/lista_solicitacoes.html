@@ -1,0 +1,68 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Solicitações | Gerencia Adv{% endblock %}
+{% block page_title %}Solicitações{% endblock %}
+{% block page_subtitle %}Acompanhe os pedidos de abertura e andamento dos casos{% endblock %}
+
+{% block content %}
+<div class="hero-box mb-4">
+	<div class="row align-items-center g-3">
+		<div class="col-lg-8">
+			<h2 class="h3 fw-bold mb-2">Solicitações do escritório</h2>
+			<p class="mb-0 muted-text">
+				Centralize aqui as solicitações recebidas dos clientes e o status de cada uma.
+			</p>
+		</div>
+		<div class="col-lg-4 text-lg-end">
+			<a href="{% url 'processos:web_nova_solicitacao' %}" class="btn btn-primary px-4">Nova solicitação</a>
+		</div>
+	</div>
+</div>
+
+<div class="card section-card">
+	<div class="card-body">
+		<div class="table-responsive">
+			<table class="table align-middle mb-0">
+				<thead>
+					<tr>
+						<th>Cliente</th>
+						<th>Tipo</th>
+						<th>Status</th>
+						<th>Última atualização</th>
+						<th class="text-end">Ações</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Maria Silva</td>
+						<td>Inventário</td>
+						<td><span class="badge text-bg-warning">Em análise</span></td>
+						<td>Documentação recebida</td>
+						<td class="text-end">
+							<a href="{% url 'processos:web_detalhe_solicitacao' 1 %}" class="btn btn-outline-primary btn-sm">Ver</a>
+						</td>
+					</tr>
+					<tr>
+						<td>João Santos</td>
+						<td>Divórcio</td>
+						<td><span class="badge text-bg-primary">Em andamento</span></td>
+						<td>Petição protocolada</td>
+						<td class="text-end">
+							<a href="{% url 'processos:web_detalhe_solicitacao' 2 %}" class="btn btn-outline-primary btn-sm">Ver</a>
+						</td>
+					</tr>
+					<tr>
+						<td>Beatriz Fernandes</td>
+						<td>Trabalhista</td>
+						<td><span class="badge text-bg-success">Atualizado</span></td>
+						<td>Audiência marcada</td>
+						<td class="text-end">
+							<a href="{% url 'processos:web_detalhe_solicitacao' 3 %}" class="btn btn-outline-primary btn-sm">Ver</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}

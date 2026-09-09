@@ -1,0 +1,93 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Dashboard | Gerencia Adv{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Resumo rápido doos processos e atividade {% endblock %}
+
+{% block content %}
+<div class='hero-box mb-4'>
+    <div class='row align-items-center'>
+        <div class='col-lg-8'>
+            <h2 class='h3 fw-bold mb-2'>Controle do escritório em um só lugar</h2>
+            <p class='mb-0'>Acompanhe todos os processos e atividades do escritório.</p>
+        </div>
+        <div class='col-lg-4 text-lg-end mt-3 mt-lg-9'>
+            <a href='#' class='btn btn-primary'>Novo Processo</a>
+        </div>
+    </div>
+</div>
+
+<div class='row g-4 mb-4'>
+    <div class='col-md-6 col-xl-3'>
+        <div class='card section-card -h100'>
+            <div class='card-body'>
+                <p class='muted-text mb-2'>Processos ativos</p>
+                <h3 class='fw-bold mb=0'>24</h3>
+            </div>
+        </div>
+    </div>
+</div>
+<div class='col-md-6 col-xl-3'>
+    <div class='card section-card h-100'>
+        <div class='card-body'>
+            <p class='muted-text mb-2'>Documentos pendentes</p>
+            <h3 class='fw-bold mb-0'>8</h3>
+        </div>
+    </div>
+</div>
+<div class='col-md-6 col-xl-3'>
+    <div class='card section-card h-100'>
+        <div class='card-body'>
+            <p class='muted-text mb-2'>Solicitações novas</p>
+            <h3 class='fw-bold mb-0'>5</h3>
+        </div>
+    </div>
+</div>
+<div class='col-md-6 col-xl-3'>
+    <div class='card section-card h-100'>
+        <div class='card-body'>
+            <p class='muted-text mb-2'>Clientes acompanhando</p>
+            <h3 class='fw-bold mb-0'>14</h3>
+        </div>
+    </div>
+</div>
+<div class='card section-card'>
+    <div class='card-body'>
+        <h3 class='h5 fw-bold mb-3'>ÚLtimas movimentações</h3>
+
+        <div class='table-responsive'>
+            <table class='table align-middle'>
+                <thead>
+                    <tr>
+                        <th>Processo</th>
+                        <th>Processo</th>
+                        <th>Cliente</th>
+                        <th>Status</th>
+                        <th>Atualização</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>INvetário</td>
+                        <td>Maria Silva</td>
+                        <td><span class='badge text-bg-warning'>Em análise</span></td>
+                        <td>Documentação recebida</td>
+                    </tr>
+                    <tr>
+                        <td>Divórcio patos</td>
+                        <td>Patos da Silva</td>
+                        <td><span class='badge text-bg-primary'>Em andamento</span></td>
+                        <td>Petição protocolada</td>
+                    </tr>
+                    <tr>
+                        <td>Trabalhista Fernandes</td>
+                        <td>Beatriz Fernandes</td>
+                        <td><span class='badge text-bg-success'>Atualizado</span></td>
+                        <td>Audiência marcada</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

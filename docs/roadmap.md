@@ -1,129 +1,111 @@
 # Roadmap do Projeto Gerencia Adv
 
-Este documento organiza as etapas de desenvolvimento do projeto em fases, para servir como base de implementação no VS Code.
+Este roadmap prioriza validacao rapida do fluxo do escritorio com interface web e, na sequencia, evolucao segura para API.
 
----
+## Fase 1 - Fundacao tecnica
 
-## Fase 1 — Base do projeto
-
-Objetivo: criar a estrutura inicial do sistema e preparar o ambiente de desenvolvimento.
+Objetivo: garantir base estavel para desenvolver sem bloqueios.
 
 ### Tarefas
-- Criar o projeto Django
-- Configurar o ambiente virtual
-- Instalar dependências iniciais
-- Conectar o projeto ao PostgreSQL
-- Configurar arquivos estáticos
-- Configurar arquivos de mídia
-- Organizar a estrutura inicial de pastas
+- Confirmar ambiente virtual e dependencias
+- Revisar configuracao do projeto (apps, banco, static, media)
+- Rodar migracoes e check do Django
+- Padronizar estrutura de pastas dos apps atuais
 
 ### Resultado esperado
-- Projeto Django criado e funcionando
-- Banco de dados configurado
-- Estrutura pronta para receber os apps
+- Projeto sobe com runserver sem erro
+- Configuracao pronta para evoluir telas e API
 
----
+## Fase 2 - Interface web MVP com Bootstrap
 
-## Fase 2 — Usuários e autenticação
-
-Objetivo: permitir que clientes e advogado possam criar conta, entrar no sistema e acessar áreas diferentes.
+Objetivo: permitir uso real no navegador antes da API completa.
 
 ### Tarefas
-- Criar o app `accounts`
-- Criar modelo de usuário com perfis
-- Implementar cadastro
-- Implementar login
-- Implementar logout
-- Separar permissões entre cliente e advogado
-- Criar regras de acesso às páginas
+- Criar layout base com Bootstrap
+- Criar paginas de login e perfil
+- Criar paginas de processos (lista, detalhe, nova solicitacao, envio de documento)
+- Criar navegacao entre telas
+- Exibir mensagens de sucesso e erro
 
 ### Resultado esperado
-- Usuários conseguem acessar o sistema
-- Cada perfil tem acesso ao que lhe pertence
+- Advogado consegue operar fluxo manual no sistema
+- Cliente consegue visualizar acompanhamento basico
+- Time valida usabilidade cedo, sem depender da API pronta
 
----
+## Fase 3 - Fluxo manual operacional
 
-## Fase 3 — Processos
-
-Objetivo: estruturar os tipos de processos e as solicitações feitas pelos clientes.
+Objetivo: transformar o sistema em ferramenta util para rotina do escritorio.
 
 ### Tarefas
-- Criar o app `processes`
-- Cadastrar tipos de processo
-- Definir descrição de cada processo
-- Criar formulário de solicitação
-- Salvar solicitações no banco
-- Vincular solicitação ao cliente
-- Vincular solicitação ao tipo de processo
+- Ajustar formularios para cadastro manual de processos
+- Criar atualizacao manual de status
+- Exibir historico basico de alteracoes
+- Garantir vinculo cliente-processo
 
 ### Resultado esperado
-- Cliente consegue solicitar um processo dentro da plataforma
-- Advogado consegue visualizar as solicitações recebidas
+- Escritorio consegue cadastrar e atualizar casos manualmente
+- Cliente acompanha o andamento dentro da plataforma
 
----
+## Fase 4 - API v1 (primeira API)
 
-## Fase 4 — Documentos
-
-Objetivo: centralizar o envio e armazenamento dos documentos necessários para cada processo.
+Objetivo: publicar endpoints essenciais sem retrabalho.
 
 ### Tarefas
-- Criar o app `documents`
-- Cadastrar documentos obrigatórios por tipo de processo
-- Permitir upload de arquivos
-- Vincular documentos à solicitação correspondente
-- Listar documentos enviados
-- Controlar documentos pendentes
+- Definir contratos JSON de request/response
+- Criar serializers de usuarios
+- Criar serializers de processos
+- Implementar endpoints de autenticacao e perfil
+- Implementar endpoints de listagem, detalhe e atualizacao de status
+- Aplicar permissoes por perfil (advogado e cliente)
 
 ### Resultado esperado
-- Cliente consegue enviar documentos no sistema
-- Advogado consegue acessar tudo em um só lugar
+- API v1 funcional com autenticacao
+- Cliente acessa apenas os proprios dados
+- Advogado gerencia o conjunto de processos do escritorio
 
----
+## Fase 5 - Qualidade e seguranca
 
-## Fase 5 — Painéis e acompanhamento
-
-Objetivo: criar as telas principais para cliente e advogado acompanharem o sistema.
+Objetivo: reduzir risco antes de escalar uso.
 
 ### Tarefas
-- Criar o app `dashboard`
-- Criar dashboard do cliente
-- Criar dashboard do advogado
-- Exibir status dos processos
-- Permitir atualização de status pelo advogado
-- Mostrar histórico de alterações
+- Criar testes minimos de views web e API
+- Criar testes de permissao e validacao
+- Padronizar tratamento de erros
+- Documentar API com OpenAPI/Swagger
 
 ### Resultado esperado
-- Cliente acompanha o andamento do caso
-- Advogado controla os processos de forma centralizada
+- Confianca para evoluir sem quebrar fluxo principal
+- API documentada para consumo por front ou app mobile
 
----
+## Fase 6 - Integracoes e automacao juridica
 
-## Fase 6 — Melhorias futuras
+Objetivo: reduzir trabalho manual do advogado.
 
-Objetivo: evoluir o sistema depois do MVP.
+### Tarefas
+- Integrar provedor de acompanhamento processual
+- Integrar notificacoes (email/WhatsApp)
+- Avaliar assinatura eletronica
+- Criar trilha de auditoria das atualizacoes
 
-### Possíveis melhorias
-- Notificações por e-mail
-- Filtros de busca avançados
-- Comentários internos no processo
-- Assinatura digital
-- Exportação de relatórios
-- API REST com Django REST Framework
-- Frontend separado com React ou outra tecnologia
+### Resultado esperado
+- Menos atualizacao manual repetitiva
+- Melhor comunicacao com cliente
+- Operacao mais escalavel
 
----
+## Ordem sugerida de implementacao
 
-## Ordem sugerida de implementação
+1. Fundacao tecnica
+2. Interface web MVP com Bootstrap
+3. Fluxo manual operacional
+4. API v1
+5. Qualidade e seguranca
+6. Integracoes e automacao juridica
 
-1. Base do projeto
-2. Autenticação
-3. Processos
-4. Documentos
-5. Dashboards
-6. Melhorias
+## Criterio de sucesso do MVP
 
----
+O MVP esta pronto quando:
 
-## Observação
-
-Este documento deve ser usado como guia prático para o desenvolvimento no VS Code, ajudando a manter o projeto organizado por etapas.
+1. O advogado cadastra e atualiza processos manualmente no sistema
+2. O cliente autentica e acompanha os proprios processos
+3. O projeto roda sem erros de configuracao
+4. A API v1 possui os endpoints essenciais com permissao correta
